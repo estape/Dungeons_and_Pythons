@@ -1,11 +1,10 @@
-
 import tkinter as tk
 import pygame
 import requests
 import json
 
 # Configurações da API Perplexity
-API_KEY = "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"
+API_KEY = "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"  # Obtenha em: https://pplx.ai/
 API_URL = "https://api.perplexity.ai/chat/completions"
 
 # Configuração inicial do jogo
@@ -18,12 +17,12 @@ def iniciar_jogo():
     Sempre ofereça opções de ação, mas permita liberdade criativa.
     Use um estilo dramático e mantenha o ritmo da história.
     """
-
+    
     historico = [{"role": "system", "content": sistema_prompt}]
-
+    
     primeira_mensagem = "Você acorda em uma masmorra escura e úmida. A luz fraca entra por uma grade no alto das paredes de pedra. O que você faz?"
-    #historico.append({"role": "assistant", "content": primeira_mensagem})
-
+    historico.append({"role": "assistant", "content": primeira_mensagem})
+    
     atualizar_interface(primeira_mensagem)
     return historico
 
@@ -35,10 +34,8 @@ def perguntar_ia(historico, mensagem_jogador):
 
     historico_temp = historico + [{"role": "user", "content": mensagem_jogador}]
 
-    print(historico_temp)
-
     data = {
-        "model": "sonar",
+        "model": "sonar",  # modelo correto
         "messages": historico_temp,
         "max_tokens": 1000,
         "temperature": 0.7
@@ -51,11 +48,12 @@ def perguntar_ia(historico, mensagem_jogador):
         if resposta.status_code == 200 and "choices" in resposta_json and resposta_json["choices"]:
             conteudo_resposta = resposta_json["choices"][0].get("message", {}).get("content", "")
             if conteudo_resposta:
-                historico.append({"role": "system", "content": conteudo_resposta})
+                historico.append({"role": "assistant", "content": conteudo_resposta})
                 return conteudo_resposta
             else:
                 return "Erro na API: Resposta inesperada do modelo."
         else:
+            # Mostra mensagem de erro detalhada
             return f"Erro na API: {resposta_json}"
     except Exception as e:
         return f"Erro na conexão: {str(e)}"
@@ -70,12 +68,14 @@ def enviar():
     user_input = bottom_text.get("1.0", tk.END).strip()
     if not user_input:
         return
-
+    
+    # Atualiza a interface do usuário
     top_text.config(state='normal')
     top_text.insert(tk.END, "\nJogador: " + user_input + "\n")
     top_text.config(state='disabled')
     bottom_text.delete("1.0", tk.END)
-
+    
+    # Processa a resposta da IA
     resposta_ia = perguntar_ia(historico, user_input)
     atualizar_interface(resposta_ia)
 
@@ -86,8 +86,10 @@ def limpar():
 root = tk.Tk()
 root.title("Dungeons & Pythons")
 
-historico = None
+# Variável global para o histórico
+historico = None  # será inicializado após a criação dos widgets
 
+# Elementos da interface
 title_label = tk.Label(
     root,
     text="Dungeons & Pythons",
@@ -111,12 +113,14 @@ enviar_btn.pack(side=tk.LEFT, padx=(0, 5))
 limpar_btn = tk.Button(button_frame, text="Limpar", command=limpar, width=12)
 limpar_btn.pack(side=tk.LEFT)
 
+# Configuração de música
 musica_var = tk.BooleanVar(value=True)
 checkbox = tk.Checkbutton(root, text="Ativar musica", variable=musica_var)
 checkbox.pack(pady=(0, 10), anchor='w', padx=10)
 
 pygame.mixer.init()
 
+# Inicializa o histórico após os widgets necessários existirem
 historico = iniciar_jogo()
 
 def toggle_music():
@@ -129,6 +133,7 @@ def toggle_music():
 musica_var.trace_add("write", lambda *args: toggle_music())
 toggle_music()
 
+# Configurações visuais
 root.geometry("640x480")
 root.minsize(640, 480)
 root.configure(bg="#593818")
