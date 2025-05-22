@@ -6,7 +6,7 @@ import requests
 import json
 
 # Configurações da API Perplexity
-API_KEY = "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"
+API_KEY = ""
 API_URL = "https://api.perplexity.ai/chat/completions"
 
 # Configuração inicial do jogo
