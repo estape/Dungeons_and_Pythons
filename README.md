@@ -45,6 +45,11 @@ pip install requests
 python main.py
 ```
 
+### 5. Perplexity API
+
+- API: Será solicitado toda inicialização do jogo a API do Perplexity, por medidas de segurança, essa API não será armazenada localmente.
+- Saiba mais em: https://docs.perplexity.ai/guides/api-organization
+
 ---
 
 ## 🎮 Como jogar
