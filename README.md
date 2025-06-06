@@ -47,8 +47,8 @@ python main.py
 
 ### 5. Perplexity API
 
-- API: Será solicitado toda inicialização do jogo a API do Perplexity, por medidas de segurança, essa API não será armazenada localmente.
-- Saiba mais em: https://docs.perplexity.ai/guides/api-organization
+- Será solicitado em toda inicialização do jogo a API do Perplexity, por medidas de segurança essa API não será armazenada localmente.
+- Mais informações sobre a API: https://docs.perplexity.ai/guides/api-organization
 
 ---
 
