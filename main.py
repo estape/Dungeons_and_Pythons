@@ -1,9 +1,11 @@
 
 import tkinter as tk
 from tkinter import ttk
-import pygame
-import requests
+from tkinter import messagebox
+import pygame # <-- Suporte para música de fundo
+import requests # <-- Requesito para a API Perplexity
 import json
+import os
 
 # Configurações da API Perplexity
 API_KEY = ""
@@ -19,18 +21,38 @@ def iniciar_jogo():
     Sempre ofereça opções de ação, mas permita liberdade criativa.
     Use um estilo dramático e mantenha o ritmo da história.
     Mantenha o contexto da narrativa da história.
-    Antes de inicar aguarde as informações do personagem do jogador chegarem até você.
     O jogador pode escolher entre as seguintes classes: Guerreiro: Versátil e mestre em armas, especialista em combate corpo a corpo.|Bárbaro: Guerreiro selvagem que luta com fúria bruta e pouca armadura.|Paladino: Guerreiro sagrado que usa poderes divinos para proteger e curar.|Cavaleiro: Combatente honrado, geralmente montado, com código de conduta.|Monge: Mestre em artes marciais, rápido, disciplinado e centrado.|Mago: Usuário de magia arcana estudada, poderoso mas fisicamente frágil.|Feiticeiro: Canaliza magia inata, geralmente com linhagem mágica.|Bruxo: Faz pacto com entidades para obter poder mágico sombrio.|Clérigo: Servo divino que cura, protege e luta em nome de um deus.|Druida: Guardião da natureza que usa magias naturais e se transforma em animais.|Ladino: Mestre da furtividade, armadilhas, truques e ataques precisos.|Bardo: Usuário de música mágica, versátil no combate e na diplomacia.|Patrulheiro: Caçador e rastreador do mato, excelente com arco e natureza.|Caçador de Recompensas: Especialista em caçar alvos específicos, furtivo e letal.|Ninja: Combatente veloz e furtivo, mestre em ataques surpresa.|Assassino: Perito em eliminar alvos rapidamente, usa venenos e táticas furtivas.|Artífice: Inventor mágico que usa engenhocas, armadilhas e itens mágicos.|Alquimista: Mestre de poções, explosivos e transmutações químicas.|Oráculo: Canal espiritual com visões do futuro, poderes únicos e maldições.|Xamã: Mediador entre espíritos e o mundo físico, usa magias tribais.|Invocador: Conjura e controla criaturas mágicas para lutar por ele.|Psíquico: Usa o poder da mente para controlar, manipular ou prever.|Necromante: Controla mortos-vivos e usa magias sombrias de morte.|Samurai: Guerreiro disciplinado com estilo de combate focado e honra.|Pirata: Combatente ágil do mar, usa táticas sujas e armas exóticas.|Gunslinger: Especialista em armas de fogo, rápido e letal a distância.
     """
 
     historico = [{"role": "system", "content": sistema_prompt}]
 
-    primeira_mensagem = "Olá jogador! Bem-vindo ao mundo de Dungeons & Pythons. Vamos montar seu personagem!\n\n" \
-                        "Por favor, escolha Personagem no menu acima e escolha Criar Personagem.\n" \
-                        "Depois disso, você poderá começar a aventura!\n\n" \
-    #historico.append({"role": "assistant", "content": primeira_mensagem})
+    # Carregar personagem salvo, se existir
 
-    atualizar_interface(primeira_mensagem)
+    if os.path.exists("personagem_salvo.json"):
+        try:
+            with open("personagem_salvo.json", "r", encoding="utf-8") as f:
+                dados = json.load(f)
+                personagem_info.update({
+                    "nome": dados.get("nome", "-"),
+                    "classe": dados.get("classe", "-"),
+                    "arma": dados.get("arma", "-"),
+                    "habilidade": dados.get("habilidade", "-")
+                })
+                # Atualiza status
+                hp_var.set(dados.get("hp", 100))
+                mp_var.set(dados.get("mp", 50))
+                xp_var.set(dados.get("xp", 0))
+                atualizar_info_personagem()
+
+            primeira_mensagem = "Olá jogador! Bem-vindo de volta ao mundo de Dungeons & Pythons. Vamos continuar sua aventura!\n\n"
+            atualizar_interface(primeira_mensagem)
+        except Exception as e:
+            print(f"Erro ao carregar personagem salvo: {e}")
+    else:
+        primeira_mensagem = "Olá jogador! Bem-vindo ao mundo de Dungeons & Pythons. Vamos montar seu personagem!\n\n" \
+                            "Por favor, escolha Personagem no menu acima e escolha Criar Personagem.\n" \
+                            "Depois disso, você poderá começar a aventura!\n\n"
+        atualizar_interface(primeira_mensagem)
     return historico
 
 def perguntar_ia(historico, mensagem_jogador):
@@ -240,6 +262,7 @@ def janela_personagem():
 
         mensagem_criacao = f"Seu personagem {nome} é um(a) {classe} que usa uma {arma} e tem a habilidade especial {habilidade}."
         atualizar_interface(mensagem_criacao)
+        atualizar_info_personagem()
         janela.destroy()
 
     criar_btn = tk.Button(janela, text="Criar Personagem", command=criar_personagem)
@@ -275,8 +298,110 @@ personagem_menu.add_command(label="Criar Personagem", command=janela_personagem)
 sobre_menu = tk.Menu(menubar, tearoff=0)
 menubar.add_cascade(label="Sobre", menu=sobre_menu)
 
-top_text = tk.Text(root, height=8, width=40, state='disabled', wrap='word')
-top_text.pack(padx=10, pady=(10, 5), fill='both', expand=True)
+# Frame principal para dividir a área de texto e o painel de informações
+main_frame = tk.Frame(root)
+main_frame.pack(padx=10, pady=(10, 5), fill='both', expand=True)
+
+# Área de texto (narrativa)
+top_text = tk.Text(main_frame, height=8, width=40, state='disabled', wrap='word')
+top_text.pack(side=tk.LEFT, fill='both', expand=True)
+
+# Painel de informações do personagem
+info_frame = tk.Frame(main_frame, width=200, bg="#eee")
+info_frame.pack(side=tk.RIGHT, fill='y', padx=(10, 0))
+
+# Labels para informações do personagem
+nome_var = tk.StringVar(value="Nome: -")
+classe_var = tk.StringVar(value="Classe: -")
+arma_var = tk.StringVar(value="Arma: -")
+habilidade_var = tk.StringVar(value="Habilidade: -")
+
+tk.Label(info_frame, textvariable=nome_var, anchor='w', bg="#eee").pack(fill='x', pady=(5,0))
+tk.Label(info_frame, textvariable=classe_var, anchor='w', bg="#eee").pack(fill='x')
+tk.Label(info_frame, textvariable=arma_var, anchor='w', bg="#eee").pack(fill='x')
+tk.Label(info_frame, textvariable=habilidade_var, anchor='w', bg="#eee").pack(fill='x')
+
+# Função para atualizar painel de informações
+def atualizar_info_personagem():
+    nome_var.set(f"Nome: {personagem_info.get('nome', '-')}")
+    classe_var.set(f"Classe: {personagem_info.get('classe', '-')}")
+    arma_var.set(f"Arma: {personagem_info.get('arma', '-')}")
+    habilidade_var.set(f"Habilidade: {personagem_info.get('habilidade', '-')}")
+    hp_var.set(100)
+    mp_var.set(50)
+    xp_var.set(0)
+
+    # Salvar informações do personagem e status em um arquivo JSON
+    dados = {
+        "nome": personagem_info.get('nome', '-'),
+        "classe": personagem_info.get('classe', '-'),
+        "arma": personagem_info.get('arma', '-'),
+        "habilidade": personagem_info.get('habilidade', '-'),
+        "hp": hp_var.get(),
+        "mp": mp_var.get(),
+        "xp": xp_var.get()
+    }
+    try:
+        with open("personagem_salvo.json", "w", encoding="utf-8") as f:
+            json.dump(dados, f, ensure_ascii=False, indent=4)
+    except Exception as e:
+        print(f"Erro ao salvar personagem: {e}")
+
+# Barras de status (HP, MP, XP)
+def criar_barra_status(parent, texto, var):
+    frame = tk.Frame(parent, bg="#eee")
+    frame.pack(fill='x', pady=(10,0))
+    tk.Label(frame, text=texto, bg="#eee").pack(anchor='w')
+    barra = ttk.Progressbar(frame, orient='horizontal', length=120, mode='determinate', variable=var, maximum=100)
+    barra.pack(fill='x', padx=5)
+    return barra
+
+hp_var = tk.IntVar(value=0)
+mp_var = tk.IntVar(value=0)
+xp_var = tk.IntVar(value=0)
+
+hp_bar = criar_barra_status(info_frame, "HP", hp_var)
+mp_bar = criar_barra_status(info_frame, "MP", mp_var)
+xp_bar = criar_barra_status(info_frame, "XP", xp_var)
+
+# Atualizar barras de status (exemplo de função, pode ser chamada conforme o jogo evolui)
+def atualizar_status(hp=None, mp=None, xp=None):
+    if hp is not None:
+        hp_var.set(hp)
+    if mp is not None:
+        mp_var.set(mp)
+    if xp is not None:
+        xp_var.set(xp)
+
+# Main
+
+def solicitar_api_key():
+    def confirmar():
+        key = entry.get().strip()
+        if not key:
+            messagebox.showerror("Erro", "A chave da API não pode ser vazia.")
+            root.destroy()
+        else:
+            global API_KEY
+            API_KEY = key
+            janela.destroy()
+
+    import tkinter.messagebox
+    janela = tk.Toplevel(root)
+    janela.title("API Key Perplexity")
+    janela.geometry("350x120")
+    janela.grab_set()
+    janela.resizable(False, False)
+    tk.Label(janela, text="Informe sua API Key do Perplexity:").pack(pady=(15, 5))
+    entry = tk.Entry(janela, width=40)
+    entry.pack(pady=(0, 10))
+    entry.focus_set()
+    btn = tk.Button(janela, text="Ok", command=confirmar, width=10)
+    btn.pack(pady=(0, 10))
+    janela.protocol("WM_DELETE_WINDOW", lambda: (messagebox.showerror("Erro", "A chave da API é obrigatória."), root.destroy()))
+    root.wait_window(janela)
+
+solicitar_api_key()
 
 bottom_text = tk.Text(root, height=2, width=40, wrap='word')
 bottom_text.pack(padx=10, pady=(0, 10), fill='x')
