@@ -1,6 +1,6 @@
 # Dungeons & Pythons 🐍🛡️
 
-**Dungeons_and_Pythons** é um projeto open source inspirado em **Dungeons & Dragons**, implementado em **Python**. O objetivo é criar uma experiência de RPG de mesa digital, permitindo que jogadores e mestres explorem aventuras em masmorras, enfrentem monstros e evoluam seus personagens em um ambiente controlado por regras automatizadas.
+**Dungeons & Pythons** é um projeto open source inspirado em **Dungeons & Dragons**, implementado em **Python**. O objetivo é criar uma experiência de RPG de mesa digital, permitindo que jogadores e mestres explorem aventuras em masmorras, enfrentem monstros e evoluam seus personagens em um ambiente controlado por regras automatizadas.
 
 ---
 
